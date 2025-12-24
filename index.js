@@ -31,6 +31,8 @@ const fs = require('fs');
 
 // Verify dist folder exists
 const distPath = path.join(__dirname, '../frontend/dist');
+const publicPath = path.join(__dirname, 'public');
+
 if (fs.existsSync(distPath)) {
     console.log('Serving static files from:', distPath);
     app.use(express.static(distPath, {
@@ -40,8 +42,17 @@ if (fs.existsSync(distPath)) {
             }
         }
     }));
+} else if (fs.existsSync(publicPath)) {
+    console.log('Serving static files from:', publicPath);
+    app.use(express.static(publicPath, {
+        setHeaders: (res, path) => {
+            if (path.endsWith('.js')) {
+                res.setHeader('Content-Type', 'application/javascript');
+            }
+        }
+    }));
 } else {
-    console.log('Frontend build not found at:', distPath);
+    console.log('Frontend build not found at:', distPath, 'or', publicPath);
 }
 
 // Handle React Routing (SPA) - Return index.html for all non-API routes
@@ -52,11 +63,15 @@ app.get(/.*/, (req, res, next) => {
     }
 
     // Check if index.html exists before trying to send it
-    const indexPath = path.join(distPath, 'index.html');
+    let indexPath = path.join(distPath, 'index.html');
+    if (!fs.existsSync(indexPath)) {
+        indexPath = path.join(publicPath, 'index.html');
+    }
+
     if (fs.existsSync(indexPath)) {
         res.sendFile(indexPath);
     } else {
-        res.status(503).send('System is starting up or Frontend build is missing. Please check logs.');
+        res.status(503).send('System is starting up or Frontend build is missing. Please check logs. If you are trying to access the API, ensure your URL starts with /api');
     }
 });
 
