@@ -1,0 +1,19 @@
+{
+  "adminId": "6944d068560adb16f7bb7055",
+  "adminEmail": "admin@test.com",
+  "clientId": "6944d068560adb16f7bb7058",
+  "items": [
+    {
+      "id": "6944d069560adb16f7bb705c",
+      "name": "Onion"
+    },
+    {
+      "id": "6944d069560adb16f7bb705f",
+      "name": "Tomato"
+    },
+    {
+      "id": "6944d069560adb16f7bb7062",
+      "name": "Oil"
+    }
+  ]
+}
