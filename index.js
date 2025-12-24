@@ -16,10 +16,27 @@ app.use(express.json());
 app.use(cors());
 app.use(helmet());
 
+// Health Check
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date(), dbState: mongoose.connection.readyState });
+});
+
 // Database Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/project4')
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.error('MongoDB Connection Error:', err));
+const connectDB = async () => {
+    try {
+        const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/project4';
+        console.log(`Attempting to connect to MongoDB... (URI starts with: ${mongoURI.substring(0, 15)}...)`);
+
+        await mongoose.connect(mongoURI, {
+            serverSelectionTimeoutMS: 5000 // Fail after 5 seconds if not connected
+        });
+        console.log('MongoDB Connected');
+    } catch (err) {
+        console.error('MongoDB Connection Error:', err);
+        // Do not exit, keep server running for health check, but functionality will fail
+    }
+};
+connectDB();
 
 // Routes
 app.use('/api/admin', adminRoutes);
