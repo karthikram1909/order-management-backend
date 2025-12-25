@@ -57,7 +57,21 @@ exports.modifyOrderItems = async (orderId, newItems, actor) => {
         // For now, assuming this service method is called after permission check
     }
 
-    order.items = newItems;
+    // Merge new items with existing prices to preserve unitPrice
+    const mergedItems = newItems.map(newItem => {
+        const existingItem = order.items.find(item =>
+            item.itemId.toString() === newItem.itemId.toString()
+        );
+
+        return {
+            itemId: newItem.itemId,
+            quantity: newItem.quantity,
+            unitPrice: existingItem ? existingItem.unitPrice : 0
+            // totalPrice will be calculated by pre-save middleware
+        };
+    });
+
+    order.items = mergedItems;
 
     // Reset prices if client modifies (Admin pricing needed again)
     // Or if simple quantity change, maybe keep unit price?
