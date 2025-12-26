@@ -94,6 +94,8 @@ app.get(/.*/, (req, res, next) => {
 
 // Init Cron
 initCronJobs();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Start Server
 app.listen(PORT, () => {

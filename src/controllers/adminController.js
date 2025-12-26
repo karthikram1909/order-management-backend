@@ -127,10 +127,10 @@ exports.getOrders = async (req, res) => {
 
 exports.cancelOrder = async (req, res) => {
     try {
-        await orderService.updateOrderStatus(req.params.id, 'CANCELLED', 'ADMIN', 'Order cancelled by Admin');
-        res.json({ message: 'Order cancelled' });
+        const order = await orderService.updateOrderStatus(req.params.id, 'CLOSED', 'Admin', 'Order cancelled by Admin');
+        res.json(order);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ message: err.message });
     }
 };
 
@@ -155,10 +155,51 @@ exports.extendDueDate = async (req, res) => {
     }
 };
 
+
 exports.deliverOrder = async (req, res) => {
     try {
         await orderService.updateOrderStatus(req.params.id, 'DELIVERED', 'ADMIN', 'Order marked as delivered by Admin');
         res.json({ message: 'Order delivered' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const CatalogItem = require('../models/CatalogItem');
+
+exports.addProduct = async (req, res) => {
+    try {
+        const { itemName, description, unit, isActive } = req.body;
+        const newProduct = new CatalogItem({
+            itemName,
+            description,
+            unit,
+            isActive: isActive !== undefined ? isActive : true
+        });
+        await newProduct.save();
+        res.status(201).json(newProduct);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.deleteProduct = async (req, res) => {
+    try {
+        // Hard delete for simplicity as per request "remove oil means they will able to remove"
+        // Or Soft delete? Model has isActive. Let's toggle or delete.
+        // User asked "remove", usually implies gone or hidden. 
+        // Let's do hard delete if no deps, or soft delete.
+        // Given CatalogItem schema has isActive, let's use soft delete or allow hard delete.
+        // For now, let's do hard delete to keep list clean, or soft delete if we want history.
+        // Let's stick to Soft Delete (isActive = false) so old orders reference it fine? 
+        // Actually Mongoose refs might break if document gone? populate usually returns null.
+        // Safest is isActive = false.
+
+        // However, user said "add product/remove product". 
+        // Let's implement Soft Delete (isActive: false) effectively hiding it.
+        const product = await CatalogItem.findByIdAndUpdate(req.params.id, { isActive: false }, { new: true });
+        if (!product) return res.status(404).json({ message: 'Product not found' });
+        res.json({ message: 'Product removed', product });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

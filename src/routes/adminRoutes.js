@@ -16,6 +16,8 @@ router.put('/order/:id/payment', adminController.updatePaymentStatus); // Mark p
 router.post('/order/:id/dispatch', adminController.dispatchOrder); // Fixed verb to POST or keep PUT? Controller uses updateOrderStatus. Frontend uses POST for dispatch.
 router.post('/order/:id/deliver', adminController.deliverOrder);
 router.post('/order/:id/cancel', adminController.cancelOrder);
-router.put('/order/:id/extend-due-date', adminController.extendDueDate);
+// Product Routes
+router.post('/products', adminController.addProduct);
+router.delete('/products/:id', adminController.deleteProduct);
 
 module.exports = router;
